@@ -56,7 +56,12 @@ module.exports = function(app){
         });
     app.route('/login')
         .get(function(req,res){
-            res.render('login',{title:'登录'});
+            res.render('login',{
+                title:'登录',
+                user:req.session.user,
+                success:req.flash('success').toString(),
+                error:req.flash('error').toString()
+            });
         })
         .post(function(req,res){
             //生成密码的md5 值
