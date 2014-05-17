@@ -2,7 +2,8 @@ var crypto = require('crypto'),
     fs = require('fs'),
     busboy = require('connect-busboy'),
     User = require('../models/user.js'),
-    Post = require('../models/post.js');
+    Post = require('../models/post.js'),
+    Comment = require('../models/comment.js');
 
 function checkLogin(req,res,next){
     if(!req.session.user){
@@ -35,6 +36,7 @@ module.exports = function(app){
             });
         });
     });
+
     app.route('/reg')
         .get(checkNotLogin)
         .get(function(req,res){
@@ -81,6 +83,7 @@ module.exports = function(app){
                 })
             })
         });
+
     app.route('/login')
         .get(checkNotLogin)
         .get(function(req,res){
@@ -113,6 +116,7 @@ module.exports = function(app){
                 res.redirect('/');                  //登录成功后跳转到主页
             });
         });
+
     app.route('/post')
         .get(checkLogin)
         .get(function(req,res){
@@ -136,6 +140,7 @@ module.exports = function(app){
                 res.redirect('/');
             })
         });
+
     app.get('/logout',checkLogin);
     app.get('/logout',function(req,res){
         req.session.user = null;
@@ -219,4 +224,67 @@ module.exports = function(app){
             })
         })
     })
+    app.post('/u/:name/:day/:title',function(req,res){
+        var date = new Date(),
+            time = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" +
+                date.getDate() + " " + date.getHours() + ":" +
+                (date.getMinutes() <10 ? '0' + date.getMinutes() :date.getMinutes());
+
+        var newComment = new Comment(req.params.name,req.params.day,req.params.title,req.body.email,req.body.website,time,req.body.content);
+        newComment.save(function(err){
+            if(err){
+                req.flash('error',err);
+                return res.redirect('back');
+            }
+            req.flash('success','留言成功');
+            res.redirect('back');
+        })
+    })
+
+    app.route('/edit/:name/:day/:title')
+        .get(checkLogin)
+        .get(function(req,res){
+            var currentUser = req.session.user;
+            Post.edit(currentUser.name, req.params.day, req.params.title, function(err, post){
+                if(err){
+                    req.flash('error',err);
+                    return res.redirect('back');
+                }
+                res.render('edit',{
+                    title:'编辑',
+                    post:post,
+                    user:req.session.user,
+                    success:req.flash('success').toString(),
+                    error:req.flash('error').toString()
+                })
+            })
+        })
+        .post(checkLogin)
+        .post(function(req,res){
+            var currentUser = req.session.user;
+            Post.update(currentUser.name, req.params.day, req.params.title, req.body.post,function(err){
+                var url = '/u/' + req.params.name + '/' + req.params.day + '/' + req.params.title;
+                if(err){
+                    req.flash('error',err);
+                    return res.redirect(url);
+                }
+                req.flash('success','修改成功');
+                res.redirect(url);
+            })
+        })
+
+
+    app.route('/remove/:name/:day/:title')
+        .get(checkLogin)
+        .get(function(req, res){
+            var currentUser = req.session.user;
+            Post.remove(currentUser.name, req.params.day, req.params.title,function(err){
+                if(err){
+                    req.flash('error',err);
+                    return res.redirect('back');
+                }
+                req.flash('success','删除成功');
+                res.redirect('/');
+            })
+        })
 };
