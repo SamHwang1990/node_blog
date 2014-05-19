@@ -207,7 +207,8 @@ module.exports = function(app){
             //查询并返回第 page 页的10篇文章
             Post.getTen(null, page, function(err, posts, total){
                 if(err){
-                    posts = [];
+                    req.flash('error',err);
+                    return res.redirect('/');
                 }
                 res.render('index',{
                     title:'主页',
