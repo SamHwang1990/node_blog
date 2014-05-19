@@ -23,7 +23,12 @@ function checkNotLogin(req,res,next){
 
 module.exports = function(app){
     app.get('/',function(req,res){
-        Post.getAll(null,function(err, posts){
+        //判断是否是第一页，并把请求的页数转换成 number 类型
+        var page = req.query.p ? parseInt(req.query.p) : 1;
+
+        //查询并返回第 page 页的10篇文章
+        Post.getTen(null, page, function(err, posts, total){
+            console.log(total);
             if(err){
                 posts = [];
             }
@@ -32,7 +37,10 @@ module.exports = function(app){
                 user:req.session.user,
                 posts:posts,
                 success:req.flash('success').toString(),
-                error:req.flash('error').toString()
+                error:req.flash('error').toString(),
+                isFirstPage:(page-1)==0,
+                isLastPage:((page-1)*10 + posts.length)==total,
+                page:page
             });
         });
     });
@@ -194,17 +202,22 @@ module.exports = function(app){
                 req.flash('error','用户不存在！');
                 return res.redirect('/');
             }
-            Post.getAll(user.name, function(err, posts){
+            //判断是否是第一页，并把请求的页数转换成 number 类型
+            var page = req.query.p ? parseInt(req.query.p) : 1;
+            //查询并返回第 page 页的10篇文章
+            Post.getTen(null, page, function(err, posts, total){
                 if(err){
-                    req.flash('error',err);
-                    return res.redirect('/');
+                    posts = [];
                 }
-                res.render('user',{
-                    title:user.name,
-                    posts:posts,
+                res.render('index',{
+                    title:'主页',
                     user:req.session.user,
+                    posts:posts,
                     success:req.flash('success').toString(),
-                    error:req.flash('error').toString()
+                    error:req.flash('error').toString(),
+                    isFirstPage:(page-1)==0,
+                    isLastPage:((page-1)*10 + posts.length)==total,
+                    page:page
                 });
             });
         });
