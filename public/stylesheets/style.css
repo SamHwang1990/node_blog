@@ -22,3 +22,4 @@ article a:hover{color: #333;text-decoration: underline;}
 .tag{background-color: #f00;border-radius: 3px;font-size: 14px;color: #fff;
 	display: inline-block;padding: 0 5px;margin-bottom: 8px;}
 .tag:hover{text-decoration: none;background-color: #fff;color: #000;}
+.search{border:0;width:6em;text-align: center;font-size: 1em;margin: 0.5em 0;}
