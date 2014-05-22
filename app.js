@@ -1,3 +1,6 @@
+var fs = require('fs');
+var accessLog = fs.createWriteStream('access.log',{flags:'a'});
+var errorLog = fs.createWriteStream('error.log',{flags:'a'});
 var express = require('express');
 var path = require('path');
 var connect = require('connect');
@@ -21,6 +24,7 @@ app.use(flash());
 
 app.use(favicon());
 app.use(logger('dev'));
+app.use(logger({stream:accessLog}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(cookieParser());
@@ -33,6 +37,11 @@ app.use(session({
     })
 }))
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(function(err, req, res, next){
+    var meta = '[' + new Date() + ']' + req.url + '\n';
+    errorLog.write(meta + err.stack + '\n');
+    next();
+})
 
 /* Set router */
 routes(app);
