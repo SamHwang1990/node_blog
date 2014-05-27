@@ -16,6 +16,8 @@ var bodyParser = require('body-parser');
 var routes = require('./routes/index');
 
 var app = express();
+var passport = require('passport'),
+    GithubStrategy = require('passport-github').Strategy;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -43,6 +45,8 @@ app.use(function(err, req, res, next){
     next();
 })
 
+app.use(passport.initialize()); //初始化 Passport
+
 /* Set router */
 routes(app);
 
@@ -54,6 +58,14 @@ app.use(function(req, res, next) {
 });
 
 /// error handlers
+
+passport.use(new GithubStrategy({
+    clientID:"40ebd8a743c312f81e41",
+    clientSecret:"9ecd251f7a84a7ae4591640df0d329eeffcb4230",
+    callbackURL:"http://localhost:3000/login/github/callback"
+},function(accessToken, refreshToken, profile, done){
+    done(null, profile);
+}))
 
 // development error handler
 // will print stacktrace

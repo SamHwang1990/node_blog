@@ -18,6 +18,8 @@
     "connect-mongo":"*",
     "express-session":"*",
     "connect-flash":"*",
-    "crypto":"*"
+    "crypto":"*",
+      "passport":"*",
+      "passport-github":"*"
   }
 }

@@ -1,4 +1,5 @@
-var crypto = require('crypto'),
+var passport = require('passport'),
+    crypto = require('crypto'),
     fs = require('fs'),
     busboy = require('connect-busboy'),
     User = require('../models/user.js'),
@@ -124,6 +125,16 @@ module.exports = function(app){
                 res.redirect('/');                  //登录成功后跳转到主页
             });
         });
+    app.get('/login/github', passport.authenticate('github',{session:false}));
+    app.get('/login/github/callback', passport.authenticate('github',{
+        session:false,
+        failureRedirect:'/login',
+        successFlash:'登陆成功?'
+    }),function(req, res){
+        req.session.user = {naem:req.user.username, head:"https://gravatar.com/avatar/" + req.user._json.gravatar_id + "?s=48"};
+        res.redirect('/');
+    })
+
 
     app.route('/post')
         .get(checkLogin)
